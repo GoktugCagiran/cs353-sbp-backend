@@ -1,0 +1,7 @@
+Flask
+Flask-Cors
+Flask-RESTful
+numpy
+pandas
+requests
+tzdata
