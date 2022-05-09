@@ -3,10 +3,7 @@ from flask_restful import reqparse, abort, Api, Resource
 import psycopg2
 import sys
 
-app = Flask(__name__)
-api = Api(app)
 connection_instance = 0
-
 
 def connect():
 	#Define our connection string
@@ -72,6 +69,4 @@ class CreditCard(Resource):
         connection_instance.execute("INSERT INTO credit_card (card_number, security_code, exp_date, creation_date, billing_address) VALUES (%s, %s, %s, %s, %s)", (args['card_number'], args['security_code'], args['exp_date'], args['creation_date'], args['billing_address']))
         connection_instance.execute("INSERT INTO belongs_to (user_id, card_number) VALUES (%s, %s)", (args['account_id'], args['card_number']))
 
-api.add_resource(CreditCard, '/credit_card/<string:card_number>')
-api.add_resource(Account, '/accounts/<int:account_id>')
 

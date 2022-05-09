@@ -3,8 +3,6 @@ from flask_restful import reqparse, abort, Api, Resource
 import psycopg2
 import sys
 
-app = Flask(__name__)
-api = Api(app)
 connection_instance = 0
 
 
@@ -43,5 +41,4 @@ class Transaction(Resource):
         connection_instance.execute("INSERT INTO made_by (transaction_id, user_id) VALUES (%s, %s)", (args['transaction_id'], user_id))
         return args
 
-    
     
