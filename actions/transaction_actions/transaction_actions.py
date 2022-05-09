@@ -10,11 +10,11 @@ def connect():
 	#Define our connection string
 	conn_string = "host='localhost' dbname='testdb3' user='postgres' password='admin'"
 	conn = psycopg2.connect(conn_string)
-	connection_instance = conn.cursor()
+	return conn.cursor()
 
 # Connect to the database
 if connection_instance == 0:
-    connect()
+    connection_instance = connect()
     if connection_instance == 0:
         print("Connection failed")
         abort(500)
@@ -30,7 +30,7 @@ class Transaction(Resource):
         else:
             abort(404, message="Transaction {} doesn't exist".format(transaction_id))
 
-    def post(self, user_id):
+    def post(self, account_id):
         parser = reqparse.RequestParser()
         parser.add_argument('transaction_id', type=int)
         parser.add_argument('amount', type=float)
@@ -38,7 +38,7 @@ class Transaction(Resource):
         parser.add_argument('date', type=str)
         args = parser.parse_args()
         connection_instance.execute("INSERT INTO transaction (transaction_id, amount, transaction_type, date) VALUES (%s, %s, %s, %s)", (args['transaction_id'], args['amount'], args['transaction_type'], args['date']))
-        connection_instance.execute("INSERT INTO made_by (transaction_id, user_id) VALUES (%s, %s)", (args['transaction_id'], user_id))
+        connection_instance.execute("INSERT INTO made_by (transaction_id, user_id) VALUES (%s, %s)", (args['transaction_id'], account_id))
         return args
 
     
