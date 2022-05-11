@@ -30,7 +30,7 @@ class DepositingTransaction(Resource):
             if len(transaction) == 0:
                 return "No transactions"
             
-            # Parsing the account data to a JSON format with columns as keys
+            # Parsing the transaction data to a JSON format with columns as keys
             transaction_data = []
             for i in range(len(transaction)):
                 transaction_data.append({})
