@@ -2,6 +2,8 @@ from flask import Flask
 from flask_restful import Api
 from actions.transaction_actions.transaction_actions import DepositingTransaction, WithdrawingTransaction
 from actions.account_actions.account_actions import Account, CreditCard
+from actions.bet_actions.bet_actions import Bet, BetSlip, MonetizedBetSlip
+
 
 app = Flask(__name__)
 api = Api(app)
