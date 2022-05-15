@@ -23,14 +23,31 @@ if connection_instance == 0:
 
 class Team(Resource):
     def get(self, team_id):
-        connection_instance.execute("SELECT * FROM team WHERE team_id = %s", (team_id,))
-        team = connection_instance.fetchone()
-        if team:
-            # Parsing the account data to a JSON format with columns as keys
-            team_data = {}
-            for i in range(len(team)):
-                team_data[connection_instance.description[i][0]] = team[i].__str__()
-            return team_data
+        # Getting all teams in various categories
+        if team_id < 0:
+            # Parsing the arguments
+            parser = reqparse.RequestParser()
+            # Get Type
+            parser.add_argument('type', type=str, required=True)
+            # Get Id
+            parser.add_argument('id', type=int, required=True)
+            # Get the arguments
+            args = parser.parse_args()
+            cursor = 0
+            # Queries for different types
+            if args['type'] == 'league':
+                cursor = connection_instance.execute("SELECT * FROM team INNER JOIN plays_in ON team.team_id = plays_on.team_id WHERE league_id = %s ORDER BY standing ASC", (args['id'],))
+            elif args['type'] == 'origin_country':
+                cursor = connection_instance.execute("SELECT * FROM team WHERE origin_country = %s", (args['id'],))
+        else:
+            connection_instance.execute("SELECT * FROM team WHERE team_id = %s", (team_id,))
+            team = connection_instance.fetchone()
+            if team:
+                # Parsing the account data to a JSON format with columns as keys
+                team_data = {}
+                for i in range(len(team)):
+                    team_data[connection_instance.description[i][0]] = team[i].__str__()
+                return team_data
 
 
     def post(self, team_id):
@@ -65,9 +82,38 @@ class Team(Resource):
         args = parser.parse_args()
 
         # Getting the cursor
-        cursor = connection_instance.execute("INSERT INTO teams (title, networth, president_name, coach, logo, origin_country, description, category) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", (args['title'], args['networth'], args['president_name'], args['coach'], args['logo'], args['origin_country'], args['description'], args['category']))
+        cursor = connection_instance.execute("INSERT INTO team (title, networth, president_name, coach, logo, origin_country, description, category) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", (args['title'], args['networth'], args['president_name'], args['coach'], args['logo'], args['origin_country'], args['description'], args['category']))
+        # Returning the data
+        return {'title': args['title'], 'networth': args['networth'], 'president_name': args['president_name'], 'coach': args['coach'], 'logo': args['logo'], 'origin_country': args['origin_country'], 'description': args['description'], 'category': args['category']}
 
 
+    # Method called when adding a team to a league
+    def put(self, team_id):
+
+        # Parsing the arguments
+        parser = reqparse.RequestParser()
+
+        # Putting team into league
+        parser.add_argument('league_id', type=int, required=True)
+        parser.add_argument('standing', type=int, required=True)
+        args = parser.parse_args()
+        # Getting the cursor
+        cursor = connection_instance.execute("INSERT INTO plays_in (team_id, league_id, standing) VALUES (%s, %s, %s)", (team_id, args['league_id'], args['standing']))
+        # Incrementing the number of teams in the league
+        cursor = connection_instance.execute("UPDATE league SET team_count = team_count + 1 WHERE league_id = %s", (args['league_id'],))
+        # Incrementing the value of the league
+
+        # Getting the updating team
+        cursor = connection_instance.execute("SELECT * FROM team WHERE team_id = %s", (team_id.__str__(),))
+        team = connection_instance.fetchone()
+        
+        # Getting the team value
+        team_value = int(team[2])
+
+        cursor = connection_instance.execute("UPDATE league SET total_worth = total_worth + %s WHERE league_id = %s", (team_value.__str__(), args['league_id']))
+        # Returning the data
+        return {'league_id': args['league_id'], 'standing': args['standing']}
+        
 
 class TeamBase(Resource):
     def get(self, team_id):
@@ -95,7 +141,7 @@ class TeamBase(Resource):
         parser.add_argument('title', type=str, required=True)
 
         # Type
-        parser.add_argument('type', type=str, required=True)
+        parser.add_argument('base_type', type=str, required=True)
 
         # Seating Capacity
         parser.add_argument('seating_capacity', type=int, required=True)
@@ -116,13 +162,36 @@ class TeamBase(Resource):
             base_id += 1
 
         # Getting the cursor
-        cursor = connection_instance.execute("INSERT INTO team_bases (title, type, seating_capacity, description) VALUES (%s, %s, %s, %s)", (args['title'], args['type'], args['seating_capacity'], args['description']))
+        cursor = connection_instance.execute("INSERT INTO team_base (title, base_type, seating_capacity, description) VALUES (%s, %s, %s, %s)", (args['title'], args['base_type'], args['seating_capacity'], args['description']))
         cursor = connection_instance.execute("INSERT INTO home_base_of (team_id, base_id) VALUES (%s, %s)", (team_id, base_id.__str__()))
 
 
 class Player(Resource):
     def get(self, player_id):
-        abort
+        
+        if player_id > 0:
+            connection_instance.execute("SELECT * FROM player WHERE player_id = %s", (player_id,))
+            player = connection_instance.fetchone()
+            # Parsing the account data to a JSON format with columns as keys
+            player_data = {}
+            for i in range(len(player)):
+                player_data[connection_instance.description[i][0]] = player[i].__str__()
+            return player_data
+        else:
+            parser = reqparse.RequestParser()
+            parser.add_argument('team_id', type=int, required=True)
+            args = parser.parse_args()
+            team_id = args['team_id']
+
+            connection_instance.execute("SELECT * FROM player INNER JOIN member_of ON player.player_id = member_of.player_id WHERE team_id = %s", (team_id,))
+            players = connection_instance.fetchall()
+            # Parsing the account data to a JSON format with columns as keys
+            player_data = []
+            for player in players:
+                player_data.append({})
+                for i in range(len(player)):
+                    player_data[-1][connection_instance.description[i][0]] = player[i].__str__()
+            return player_data
 
     def post(self, player_id):
         # Parsing the arguments
@@ -172,3 +241,4 @@ class Player(Resource):
         # Getting the cursor
         cursor = connection_instance.execute("INSERT INTO players (age, networth, score, name, logo, origin_country, description, injuries_and_penalties) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", (args['age'], args['networth'], args['score'], args['name'], args['logo'], args['origin_country'], args['description'], args['injuries_and_penalties']))
         cursor = connection_instance.execute("INSERT INTO player_of (team_id, player_id, joined_at) VALUES (%s, %s, %s)", (args['team_id'], player_id.__str__(), args['joined_at']))
+        cursor = connection_instance.execute("UPDATE team SET networth = networth +  WHERE team_id = %s", (args['networth'].__str__(), args['team_id']))
