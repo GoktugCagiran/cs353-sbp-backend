@@ -13,6 +13,8 @@ app = Flask(__name__)
 api = Api(app)
 CORS(app)
 
+api.add_resource(Game, '/game/<int:game_id>')
+api.add_resource(League, '/league/<int:league_id>')
 api.add_resource(DepositingTransaction, '/depositing_transaction/<int:account_id>')
 api.add_resource(WithdrawingTransaction, '/withdrawing_transaction/<int:account_id>')
 api.add_resource(CreditCard, '/credit_card/<int:account_id>')
