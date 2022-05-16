@@ -3,6 +3,7 @@ from socket import gaierror
 from flask import Flask, jsonify
 from flask_restful import reqparse, abort, Api, Resource
 import psycopg2
+import datetime
 import sys
 
 connection_instance = 0
@@ -28,7 +29,9 @@ class Game(Resource):
         # Parse the arguments
 
         if(game_id == 0):
-            connection_instance.execute("SELECT * FROM games")
+            # Get current datetime using the system time
+            current_date = datetime.datetime.now().__str__()            
+            connection_instance.execute("SELECT * FROM game INNER JOIN option_on ON game.id = option_on.game_id INNER JOIN bet ON option_on.bet_id = bet.bet_id WHERE bet.playable_until > %s GROUP BY game_id", (current_date,))
             games = connection_instance.fetchall()
             # Returning the data in a json format with column names as keys
             games_data = []
