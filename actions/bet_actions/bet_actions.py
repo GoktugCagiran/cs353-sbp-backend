@@ -141,7 +141,6 @@ class BetSlip(Resource):
         # Updating the total odd
         connection_instance.execute("UPDATE bet_slip SET total_odd = total_odd * %s WHERE bet_slip_id = %s", (bet_odd, bet_slip_id))
 
-
 class MonetizedBetSlip(Resource):
     def get(self, monetized_bet_slip_id):
         # Get the monetized bet slip
