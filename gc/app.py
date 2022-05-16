@@ -3,6 +3,7 @@ from flask_restful import Resource, Api
 from flask_cors import CORS
 from blueprints.auth.blueprint_authentication import blueprint_authentication
 from blueprints.scratch_off.blueprint_scratch_off import blueprint_scratch_off
+from blueprints.admin.blueprint_admin import blueprint_admin
 from actions.account_actions.account_actions import Account, CreditCard
 from actions.team_actions.team_actions import Team, TeamBase, Player
 from actions.game_actions.game_actions import Game, League
@@ -29,7 +30,7 @@ api.add_resource(MonetizedBetSlip, '/monetized_bet_slips/<int:monetized_bet_slip
 
 app.register_blueprint(blueprint_authentication)
 app.register_blueprint(blueprint_scratch_off)
-
+app.register_blueprint(blueprint_admin)
 if __name__ == "__main__":
     app.run(debug=True)
     print('name == __main__')
