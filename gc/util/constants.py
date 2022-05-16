@@ -1,0 +1,1 @@
+CONNECTION_STRING = "host='localhost' port='5432' dbname='testdb3' user='gcagiran'"
