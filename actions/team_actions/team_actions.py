@@ -209,9 +209,6 @@ class Player(Resource):
         # Name
         parser.add_argument('name', type=str, required=True)
 
-        # Logo
-        parser.add_argument('logo', type=str, required=True)
-
         # Origin Country
         parser.add_argument('origin_country', type=str, required=True)
 
@@ -239,6 +236,6 @@ class Player(Resource):
             player_id += 1
 
         # Getting the cursor
-        cursor = connection_instance.execute("INSERT INTO players (age, networth, score, name, logo, origin_country, description, injuries_and_penalties) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", (args['age'], args['networth'], args['score'], args['name'], args['logo'], args['origin_country'], args['description'], args['injuries_and_penalties']))
-        cursor = connection_instance.execute("INSERT INTO player_of (team_id, player_id, joined_at) VALUES (%s, %s, %s)", (args['team_id'], player_id.__str__(), args['joined_at']))
-        cursor = connection_instance.execute("UPDATE team SET networth = networth +  WHERE team_id = %s", (args['networth'].__str__(), args['team_id']))
+        cursor = connection_instance.execute("INSERT INTO player (age, networth, score, player_name, origin_country, description, injuries_and_penalties) VALUES (%s, %s, %s, %s, %s, %s, %s)", (args['age'], args['networth'], args['score'], args['name'], args['origin_country'], args['description'], args['injuries_and_penalties']))
+        cursor = connection_instance.execute("INSERT INTO member_of (team_id, player_id, joined_at) VALUES (%s, %s, %s)", (args['team_id'].__str__(), player_id.__str__(), args['joined_at']))
+        cursor = connection_instance.execute("UPDATE team SET networth = networth + %s WHERE team_id = %s", (args['networth'], args['team_id']))
