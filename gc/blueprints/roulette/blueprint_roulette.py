@@ -61,7 +61,6 @@ class PlayRoulette(Resource):
             
 
 
-
         # 0 => 37 00 => 38
         ball_drop = np.random.randint(1,39)
         ball_drop_colour = self.get_ball_drop_colour(ball_drop)
