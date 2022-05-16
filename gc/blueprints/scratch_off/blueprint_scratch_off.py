@@ -131,7 +131,7 @@ class NewScratchOff(Resource):
                 "rewardTitle": available_rewards[reward_index][1],
                 "description": available_rewards[reward_index][2],
                 "value": available_rewards[reward_index][3],
-            }
+            } if reward_index >= 0 else {}
         }}, 200
 
 

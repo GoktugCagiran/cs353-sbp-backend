@@ -44,3 +44,6 @@ class ActivateUser(Resource):
         conn.close()
 
         return {"message": "User Activated."}, 200
+
+api.add_resource(DeactivateUser, "/api/admin/deactivate-user")
+api.add_resource(ActivateUser, "/api/admin/activate-user")
