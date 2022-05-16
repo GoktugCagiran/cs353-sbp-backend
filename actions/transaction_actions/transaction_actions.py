@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_restful import reqparse, abort, Api, Resource
 import psycopg2
 import sys
@@ -30,7 +30,7 @@ class DepositingTransaction(Resource):
             if len(transaction) == 0:
                 return "No transactions"
             
-            # Parsing the account data to a JSON format with columns as keys
+            # Parsing the transaction data to a JSON format with columns as keys
             transaction_data = []
             for i in range(len(transaction)):
                 transaction_data.append({})
@@ -55,12 +55,14 @@ class DepositingTransaction(Resource):
             transaction_id += 1
         connection_instance.execute("INSERT INTO transaction (transaction_id, amount, transaction_type, date) VALUES (%s, %s, %s, %s)", (transaction_id, args['amount'], args['transaction_type'], args['date']))
         connection_instance.execute("INSERT INTO made_by (transaction_id, user_id) VALUES (%s, %s)", (transaction_id, account_id))
+        connection_instance.execute("UPDATE customer SET balance = balance + %s WHERE user_id = %s", (args['amount'], account_id))
         return args
 
 
 class WithdrawingTransaction(Resource):
     
     def get(self, account_id):
+       
         connection_instance.execute("SELECT * FROM transaction INNER JOIN made_by ON transaction.transaction_id = made_by.transaction_id WHERE user_id = {} AND transaction_type LIKE 'WD%'".format(account_id.__str__(),))
         transaction = connection_instance.fetchall()
         if transaction:
@@ -83,6 +85,15 @@ class WithdrawingTransaction(Resource):
         parser.add_argument('transaction_type', type=str)
         parser.add_argument('date', type=str)
         args = parser.parse_args()
+
+        # Getting user balance from the database
+        connection_instance.execute("SELECT * FROM customer WHERE user_id = {} ".format(account_id.__str__(),))
+        customer = connection_instance.fetchone()
+        print(customer.__str__())
+        balance = int(customer[9])
+        if balance < args['amount']:
+            abort(400, message="User {} does not have enough balance".format(account_id))        
+
         # Getting the current transaction id from the database
         connection_instance.execute("SELECT MAX(transaction_id) FROM transaction")
         transaction_id = connection_instance.fetchone()[0]
@@ -92,4 +103,5 @@ class WithdrawingTransaction(Resource):
             transaction_id += 1
         connection_instance.execute("INSERT INTO transaction (transaction_id, amount, transaction_type, date) VALUES (%s, %s, %s, %s)", (transaction_id, args['amount'], args['transaction_type'], args['date']))
         connection_instance.execute("INSERT INTO made_by (transaction_id, user_id) VALUES (%s, %s)", (transaction_id, account_id))
+        connection_instance.execute("UPDATE customer SET balance = balance - {} WHERE user_id = {}".format(args['amount'], account_id))
         return args
