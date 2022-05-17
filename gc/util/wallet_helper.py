@@ -42,7 +42,7 @@ def reduce_user_balance(user_id: int, reduce_amount: float):
     
     new_balance = balance[0] - reduce_amount
 
-    cursor.execute(f'UPDATE customer SET balanc={new_balance} WHERE user_id=\'{user_id}\';')
+    cursor.execute(f'UPDATE customer SET balance={new_balance} WHERE user_id=\'{user_id}\';')
 
     conn.commit()
 

@@ -8,7 +8,8 @@ connection_instance = 0
 
 def connect():
 	#Define our connection string
-	conn_string = "host='localhost' dbname='testdb3' user='postgres' password='admin'"
+	conn_string = "host='localhost' port=5432 dbname='cs353DB' user='gcagiran'"
+
 	conn = psycopg2.connect(conn_string)
 	conn.autocommit = True
 	return conn.cursor()

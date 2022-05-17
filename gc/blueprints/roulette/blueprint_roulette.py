@@ -16,7 +16,7 @@ api = Api(blueprint_roulette)
 
 class PlayRoulette(Resource):
 
-    def get_ball_drop_colour(ball_num):
+    def get_ball_drop_colour(self, ball_num):
         if ball_num in [37, 38]:
             return "green"
         elif ball_num % 2 == 0:
@@ -53,7 +53,8 @@ class PlayRoulette(Resource):
         is_won = False
         won_amount = 0
         place_reward = np.random.randint(0,100)
-        if place_reward > 96:
+        print("Place Reward: ", place_reward)
+        if place_reward > 70:
             is_reward_placed = True
             placed_on = np.random.randint(1,39)
             select_reward = np.random.randint(0, len(available_rewards))
@@ -63,9 +64,11 @@ class PlayRoulette(Resource):
 
         # 0 => 37 00 => 38
         ball_drop = np.random.randint(1,39)
+        print("Ball Dropped On: ", ball_drop)
         ball_drop_colour = self.get_ball_drop_colour(ball_drop)
-        if placed_bets["type"] == "color":
-            
+        print("Ball Dropped Colour: ", ball_drop_colour)
+        if placed_bets["type"] == "colour":
+            print("Placed Bets Type: ", placed_bets["type"])
             # Check green
             if placed_bets["placedOn"] == "green" and ball_drop_colour == "green":
                 is_won = True
@@ -100,10 +103,10 @@ class PlayRoulette(Resource):
         if is_reward_placed:
             wheel_data_dict["rewardWon"] = reward_won,
             wheel_data_dict["rewardId"] = reward[0]
-        cursor.execute(f'INSERT INTO roulette (roulette_id, placed_bets, result, bet_amount, is_won, won_amount, wheel_data) VALUES ({roulette_id}, {placed_bets}, {res_dict}, {bet_amount}, {is_won}, {won_amount}, {wheel_data_dict});')
-        cursor.execute(f'INSERT INTO spinned_by (user_id, roulette_id, spinned_timestamp) VALUES ({user_id}, {roulette_id}, current_timestamp);')
+        cursor.execute(f'INSERT INTO roulette (roulette_id, placed_bets, result, bet_amount, is_won, won_amount, wheel_data) VALUES (\'{roulette_id}\', \'{json.dumps(placed_bets)}\', \'{json.dumps(res_dict)}\', {bet_amount}, {is_won}, {won_amount}, \'{json.dumps(wheel_data_dict)}\');')
+        cursor.execute(f'INSERT INTO spinned_by (user_id, roulette_id, spinned_timestamp) VALUES ({user_id}, \'{roulette_id}\', current_timestamp);')
         if is_reward_placed:
-            cursor.execute(f'INSERT INTO placed_on_slot (roulette_id, reward_id, slot_id) VALUES ({roulette_id}, {reward[0]}, {placed_on});')
+            cursor.execute(f'INSERT INTO placed_on_slot (roulette_id, reward_id, slot_id) VALUES (\'{roulette_id}\', {reward[0]}, {placed_on});')
 
         conn.commit()
 

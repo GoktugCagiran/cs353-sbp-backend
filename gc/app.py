@@ -9,7 +9,7 @@ from actions.team_actions.team_actions import Team, TeamBase, Player
 from actions.game_actions.game_actions import Game, League
 from actions.bet_actions.bet_actions import Bet, BetSlip, MonetizedBetSlip
 from actions.transaction_actions.transaction_actions import DepositingTransaction, WithdrawingTransaction
-
+from blueprints.roulette.blueprint_roulette import blueprint_roulette
 app = Flask(__name__)
 api = Api(app)
 CORS(app)
@@ -31,6 +31,7 @@ api.add_resource(MonetizedBetSlip, '/monetized_bet_slips/<int:monetized_bet_slip
 app.register_blueprint(blueprint_authentication)
 app.register_blueprint(blueprint_scratch_off)
 app.register_blueprint(blueprint_admin)
+app.register_blueprint(blueprint_roulette)
 if __name__ == "__main__":
     app.run(debug=True)
     print('name == __main__')
