@@ -37,7 +37,7 @@ class Team(Resource):
             cursor = 0
             # Queries for different types
             if args['type'] == 'league':
-                cursor = connection_instance.execute("SELECT * FROM team INNER JOIN plays_in ON team.team_id = plays_on.team_id WHERE league_id = %s ORDER BY standing ASC", (args['id'],))
+                cursor = connection_instance.execute("SELECT * FROM team INNER JOIN plays_in ON team.team_id = plays_in.team_id WHERE league_id = %s ORDER BY standing ASC", (args['id'],))
             elif args['type'] == 'origin_country':
                 cursor = connection_instance.execute("SELECT * FROM team WHERE origin_country = %s", (args['id'],))
             elif args['type'] == 'partakes_in':
