@@ -10,7 +10,7 @@ api = Api(blueprint_sharable)
 
 def get_sharable_data(sharable_id):
     conn = psycopg2.connect(
-        host="localhost", port=5432, database="cs353DB", user="gcagiran")
+        host="localhost", port=5432, database="testdb3", user="postgres", password="admin")
     sharable_cursor = conn.cursor()
 
     # Get Sharable Info
