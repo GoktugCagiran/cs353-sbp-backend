@@ -1,6 +1,6 @@
 from re import A
 from socket import gaierror
-from flask import Flask, jsonify
+from flask import Flask, g, jsonify
 from flask_restful import reqparse, abort, Api, Resource
 import psycopg2
 import datetime
@@ -31,7 +31,7 @@ class Game(Resource):
         if(game_id == 0):
             # Get current datetime using the system time
             current_date = datetime.datetime.now().__str__()            
-            connection_instance.execute("SELECT * FROM game INNER JOIN option_on ON game.id = option_on.game_id INNER JOIN bet ON option_on.bet_id = bet.bet_id WHERE bet.playable_until > %s GROUP BY game_id", (current_date,))
+            connection_instance.execute("SELECT * FROM game AS g INNER JOIN option_on AS oo ON g.game_id = oo.game_id INNER JOIN bet AS b ON oo.bet_id = b.bet_id WHERE b.playable_until > %s ORDER BY g.game_id", (current_date,))
             games = connection_instance.fetchall()
             # Returning the data in a json format with column names as keys
             games_data = []
@@ -39,10 +39,13 @@ class Game(Resource):
                 games_data.append({})
                 for i in range(len(game)):
                     games_data[-1][connection_instance.description[i][0]] = game[i].__str__()
-            return games_data
+            return games_data, 200
+
+
+
         else:
         # Get the game
-            connection_instance.execute("SELECT * FROM games WHERE id = %s", (game_id,))
+            connection_instance.execute("SELECT * FROM game AS g INNER JOIN option_on AS oo ON g.game_id = oo.game_id INNER JOIN bet AS b ON oo.bet_id = b.bet_id WHERE b.playable_until > %s AND g.game_id = %s ORDER BY g.game_id", (current_date,game_id.__str__()))
             game = connection_instance.fetchone()
             if game is None:
                 abort(404, message="Game {} doesn't exist".format(game_id))

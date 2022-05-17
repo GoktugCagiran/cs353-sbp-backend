@@ -24,13 +24,13 @@ if connection_instance == 0:
 class Team(Resource):
     def get(self, team_id):
         # Getting all teams in various categories
-        if team_id < 0:
+        if team_id <= 0:
             # Parsing the arguments
             parser = reqparse.RequestParser()
             # Get Type
             parser.add_argument('type', type=str, required=True)
             # Get Id
-            parser.add_argument('id', type=int, required=True)
+            parser.add_argument('id', type=str, required=True)
             # Get the arguments
             args = parser.parse_args()
             cursor = 0
@@ -39,15 +39,22 @@ class Team(Resource):
                 cursor = connection_instance.execute("SELECT * FROM team INNER JOIN plays_in ON team.team_id = plays_on.team_id WHERE league_id = %s ORDER BY standing ASC", (args['id'],))
             elif args['type'] == 'origin_country':
                 cursor = connection_instance.execute("SELECT * FROM team WHERE origin_country = %s", (args['id'],))
+            elif args['type'] == 'partakes_in':
+                cursor = connection_instance.execute("SELECT * FROM team INNER JOIN partakes_in ON team.team_id = partakes_in.team_id WHERE game_id = %s", (args['id'],))
+            elif args['type'] == 'category':
+                cursor = connection_instance.execute("SELECT * FROM team WHERE category = %s", (args['id'],))
         else:
             connection_instance.execute("SELECT * FROM team WHERE team_id = %s", (team_id,))
-            team = connection_instance.fetchone()
-            if team:
-                # Parsing the account data to a JSON format with columns as keys
-                team_data = {}
+        teams = connection_instance.fetchall()
+        if teams:
+            # Returning the data in a json format with column names as keys
+            team_data = []
+            for team in teams:
+                team_data.append({})
                 for i in range(len(team)):
-                    team_data[connection_instance.description[i][0]] = team[i].__str__()
-                return team_data
+                    team_data[-1][connection_instance.description[i][0]] = team[i].__str__()
+            return team_data
+
 
 
     def post(self, team_id):

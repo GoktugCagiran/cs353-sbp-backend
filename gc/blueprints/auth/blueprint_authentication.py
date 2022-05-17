@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request, Response
 from flask_restful import Api, Resource
+from flask_cors import CORS, cross_origin
 import psycopg2
 
 from util.auth_token_helper import get_auth_token, save_new_token, revoke_token
@@ -17,17 +18,18 @@ class HelloWorld(Resource):
 class RegisterUser(Resource):
     def post(self):
         post_data = request.json
-        post_data = {
-            "fullName": "Python Test Full Name",
-            "password": "123456",
-            "age": 25,
-            "gender": "Male",
-            "phoneNumber": "111222333444",
-            "username": "pyTestInit",
-            "email": "init@pytest.com",
-        }
+        
+    #    post_data = {
+    #        "fullName": "Python Test Full Name",
+    #        "password": "123456",
+    #        "age": 25,
+    #        "gender": "Male",
+    #        "phoneNumber": "111222333444",
+    #        "username": "pyTestInit",
+    #        "email": "init@pytest.com",
+    #    }
         conn = psycopg2.connect(
-            host="localhost", port=5432, database="cs353DB", user="gcagiran")
+            host="localhost", port=5432, database="testdb3", user="postgres", password="admin")
         cursor = conn.cursor()
         cursor.execute(
             f'INSERT INTO generic_user VALUES (DEFAULT, \'{post_data["password"]}\', \'{post_data["fullName"]}\', current_timestamp, {post_data["age"]}, \'{post_data["gender"]}\', \'{post_data["phoneNumber"]}\', \'{post_data["username"]}\', \'{post_data["email"]}\' );')
@@ -39,7 +41,6 @@ class RegisterUser(Resource):
 
 
 class LoginUser(Resource):
-
     def get(self):
         user_authenticated = False
         auth_token = None
@@ -50,7 +51,7 @@ class LoginUser(Resource):
         print('User Name: ', user_creds.get('userName'))
         print('typeof userName', type(user_creds.get('userName')))
         print('password: ', user_creds.get('password') )
-        conn = psycopg2.connect(host="localhost", port=5432, database="cs353DB", user="gcagiran")
+        conn = psycopg2.connect(host="localhost", port=5432, database="testdb3", user="postgres", password="admin")
         cursor = conn.cursor()
         cursor.execute(f'SELECT user_id, password FROM generic_user WHERE user_name=\'{user_creds.get("userName")}\'')
         row = cursor.fetchone()
