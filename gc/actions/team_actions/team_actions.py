@@ -25,13 +25,13 @@ if connection_instance == 0:
 class Team(Resource):
     def get(self, team_id):
         # Getting all teams in various categories
-        if team_id < 0:
+        if team_id <= 0:
             # Parsing the arguments
             parser = reqparse.RequestParser()
             # Get Type
             parser.add_argument('type', type=str, required=True)
             # Get Id
-            parser.add_argument('id', type=int, required=True)
+            parser.add_argument('id', type=str, required=True)
             # Get the arguments
             args = parser.parse_args()
             cursor = 0
@@ -40,15 +40,22 @@ class Team(Resource):
                 cursor = connection_instance.execute("SELECT * FROM team INNER JOIN plays_in ON team.team_id = plays_on.team_id WHERE league_id = %s ORDER BY standing ASC", (args['id'],))
             elif args['type'] == 'origin_country':
                 cursor = connection_instance.execute("SELECT * FROM team WHERE origin_country = %s", (args['id'],))
+            elif args['type'] == 'partakes_in':
+                cursor = connection_instance.execute("SELECT * FROM team INNER JOIN partakes_in ON team.team_id = partakes_in.team_id WHERE game_id = %s", (args['id'],))
+            elif args['type'] == 'category':
+                cursor = connection_instance.execute("SELECT * FROM team WHERE category = %s", (args['id'],))
         else:
             connection_instance.execute("SELECT * FROM team WHERE team_id = %s", (team_id,))
-            team = connection_instance.fetchone()
-            if team:
-                # Parsing the account data to a JSON format with columns as keys
-                team_data = {}
+        teams = connection_instance.fetchall()
+        if teams:
+            # Returning the data in a json format with column names as keys
+            team_data = []
+            for team in teams:
+                team_data.append({})
                 for i in range(len(team)):
-                    team_data[connection_instance.description[i][0]] = team[i].__str__()
-                return team_data
+                    team_data[-1][connection_instance.description[i][0]] = team[i].__str__()
+            return team_data
+
 
 
     def post(self, team_id):
@@ -108,8 +115,8 @@ class Team(Resource):
         cursor = connection_instance.execute("SELECT * FROM team WHERE team_id = %s", (team_id.__str__(),))
         team = connection_instance.fetchone()
         
-        # Getting the team value
-        team_value = int(team[2])
+        # Getting the team value of team networth column
+        team_value = team[1]
 
         cursor = connection_instance.execute("UPDATE league SET total_worth = total_worth + %s WHERE league_id = %s", (team_value.__str__(), args['league_id']))
         # Returning the data
@@ -210,9 +217,6 @@ class Player(Resource):
         # Name
         parser.add_argument('name', type=str, required=True)
 
-        # Logo
-        parser.add_argument('logo', type=str, required=True)
-
         # Origin Country
         parser.add_argument('origin_country', type=str, required=True)
 
@@ -240,6 +244,6 @@ class Player(Resource):
             player_id += 1
 
         # Getting the cursor
-        cursor = connection_instance.execute("INSERT INTO players (age, networth, score, name, logo, origin_country, description, injuries_and_penalties) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", (args['age'], args['networth'], args['score'], args['name'], args['logo'], args['origin_country'], args['description'], args['injuries_and_penalties']))
-        cursor = connection_instance.execute("INSERT INTO player_of (team_id, player_id, joined_at) VALUES (%s, %s, %s)", (args['team_id'], player_id.__str__(), args['joined_at']))
-        cursor = connection_instance.execute("UPDATE team SET networth = networth +  WHERE team_id = %s", (args['networth'].__str__(), args['team_id']))
+        cursor = connection_instance.execute("INSERT INTO player (age, networth, score, player_name, origin_country, description, injuries_and_penalties) VALUES (%s, %s, %s, %s, %s, %s, %s)", (args['age'], args['networth'], args['score'], args['name'], args['origin_country'], args['description'], args['injuries_and_penalties']))
+        cursor = connection_instance.execute("INSERT INTO member_of (team_id, player_id, joined_at) VALUES (%s, %s, %s)", (args['team_id'].__str__(), player_id.__str__(), args['joined_at']))
+        cursor = connection_instance.execute("UPDATE team SET networth = networth + %s WHERE team_id = %s", (args['networth'], args['team_id']))
