@@ -4,6 +4,11 @@ import psycopg2
 import numpy as np
 import uuid
 
+blueprint_reward = Blueprint(
+    name="blueprint_reward", import_name=__name__)
+api = Api(blueprint_reward)
+
+
 class Reward(Resource):
     def get(self):
         reward_id = request.args.get("rewardId")
@@ -49,3 +54,4 @@ class Reward(Resource):
 
         return {"message": "Reward Created Successfully"}, 200
 
+api.add_resource(Reward, "/api/reward")
