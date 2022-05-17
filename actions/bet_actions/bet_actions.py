@@ -2,6 +2,7 @@ from turtle import update
 from flask import Flask, jsonify
 from flask_restful import reqparse, abort, Api, Resource
 import psycopg2
+from datetime import datetime
 import sys
 
 connection_instance = 0
@@ -54,15 +55,6 @@ class Bet(Resource):
         parser.add_argument('bet_option_type', type=str, required=True)
         # Bet adding id
         parser.add_argument('bet_adding_id', type=int, required=True)
-        # Concludes on
-        parser.add_argument('concludes_on', type=str, required=True)
-        # Bet type
-        parser.add_argument('bet_type', type=str, required=True)
-
-        # Get the arguments
-        args = parser.parse_args()
-        # Add the bet
-        connection_instance.execute("INSERT INTO bet (bet_name, bet_desc, type, odd, playable_until) VALUES (%s, %s, %s, %s, %s)", (args['bet_name'], args['bet_desc'], args['type'], args['odd'], args['playable_until']))
 
         # Get the last bet_id
         connection_instance.execute("SELECT MAX(bet_id) FROM bet")
@@ -72,6 +64,14 @@ class Bet(Resource):
         else:
             new_bet_id = new_bet_id + 1
 
+
+        # Get the arguments
+        args = parser.parse_args()
+        # Add the bet
+        connection_instance.execute("INSERT INTO bet (bet_name, bet_desc, bet_type, odd, playable_until) VALUES (%s, %s, %s, %s, %s)", (args['bet_name'], args['bet_desc'], args['type'], args['odd'], args['playable_until']))
+
+        
+
         # If bet_option_type is normal, add the option_on
         if args['bet_option_type'] == 'normal':
             connection_instance.execute("INSERT INTO option_on (bet_id, game_id) VALUES (%s, %s)", (new_bet_id, args['bet_adding_id']))
@@ -79,18 +79,10 @@ class Bet(Resource):
         elif args['bet_option_type'] == 'long_term':
             connection_instance.execute("INSERT INTO long_term_option_on (bet_id, league_id) VALUES (%s, %s)", (new_bet_id, args['bet_adding_id']))
         
-        
-        connection_instance.execute("INSERT INTO results (concludes_on, has_won, bet_type) VALUES (%s, %s, %s)", (args['concludes_on'], '-1', args['bet_type']))
-        # Getting the last id of results
-        connection_instance.execute("SELECT MAX(id) FROM results")
-        results_id = connection_instance.fetchone()[0]
-        # Inserting into concluded_in results
-        connection_instance.execute("INSERT INTO concluded_in (bet_id, results_id) VALUES (%s, %s)", (new_bet_id, results_id))
-
 class BetSlip(Resource):
     def get(self, bet_slip_id): 
         # Get the bet slip
-        connection_instance.execute("SELECT * FROM bet_slip WHERE bet_slip_id = %s", (bet_slip_id,))
+        connection_instance.execute("SELECT * FROM bet_slip INNER JOIN is_betted_on ON bet_slip.bet_slip_id = is_betted_on.bet_slip_id WHERE bet_slip.bet_slip_id = %s", (bet_slip_id,))
         bet_slip = connection_instance.fetchone()
         if bet_slip is None:
             abort(404, message="Bet slip {} doesn't exist".format(bet_slip_id))
@@ -103,8 +95,6 @@ class BetSlip(Resource):
 
         # Parsing the arguments
         parser = reqparse.RequestParser()
-        # Created on
-        parser.add_argument('created_on', type=str, required=True)
         # Finalizes on
         parser.add_argument('finalizes_on', type=str, required=True)
         # Total odd
@@ -115,8 +105,11 @@ class BetSlip(Resource):
         parser.add_argument('bet_slip_state', type=str, required=True)
         # Get the arguments
         args = parser.parse_args()
+        current_date = datetime.now().__str__()      
+
         # Add the bet slip
-        connection_instance.execute("INSERT INTO bet_slip (created_on, finalizes_on, total_odd, mbn, bet_slip_state) VALUES (%s, %s, %s, %s, %s)", (args['created_on'], args['finalizes_on'], args['total_odd'], args['mbn'], args['bet_slip_state']))
+        
+        connection_instance.execute("INSERT INTO bet_slip (created_on, finalizes_on, total_odd, mbn, bet_slip_state) VALUES (%s, %s, %s, %s, %s)", (current_date, args['finalizes_on'], args['total_odd'], args['mbn'], args['bet_slip_state']))
 
     def put(self, bet_slip_id):
 
@@ -132,15 +125,27 @@ class BetSlip(Resource):
             connection_instance.execute("INSERT INTO is_betted_on (bet_id, bet_slip_id) VALUES (%s, %s)", (args['update_key'], bet_slip_id))
             
         
-        elif args['create_bet_slip'] : 
+        elif args['update_type'] == 'create_bet_slip': 
+
+            # Get the number of bets played on a bet slip
+            connection_instance.execute("SELECT COUNT(bet_id) FROM is_betted_on WHERE bet_slip_id = %s", (bet_slip_id,))
+            bet_slip_count = connection_instance.fetchone()[0]
+            # Get the bet slip
+            connection_instance.execute("SELECT mbn FROM bet_slip WHERE bet_slip_id = %s", (bet_slip_id,))
+            bet_slip_mbn = connection_instance.fetchone()[0]
+            if bet_slip_count < bet_slip_mbn:
+                # Return error
+                abort(400, message="There should be more bets played in betslip {}".format(bet_slip_id))
+
             connection_instance.execute("INSERT INTO create_bet_slip (bet_slip_id, user_id) VALUES (%s, %s)", (bet_slip_id, args['update_key']))
-        
+            
         # Getting the added bets odd
         connection_instance.execute("SELECT odd FROM bet WHERE bet_id = %s", (args['update_key'],))
         bet_odd = connection_instance.fetchone()[0]
         # Updating the total odd
-        connection_instance.execute("UPDATE bet_slip SET total_odd = total_odd * %s WHERE bet_slip_id = %s", (bet_odd, bet_slip_id))
 
+        connection_instance.execute("UPDATE bet_slip SET total_odd = total_odd * %s WHERE bet_slip_id = %s", (bet_odd, bet_slip_id))
+        return "Success"
 class MonetizedBetSlip(Resource):
     def get(self, monetized_bet_slip_id):
         # Get the monetized bet slip

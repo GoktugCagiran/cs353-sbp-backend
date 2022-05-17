@@ -28,9 +28,9 @@ class Game(Resource):
     def get(self, game_id):
         # Parse the arguments
 
-        if(game_id == 0):
-            # Get current datetime using the system time
-            current_date = datetime.datetime.now().__str__()            
+        # Get current datetime using the system time 
+        current_date = datetime.datetime.now().__str__()      
+        if(game_id == 0):     
             connection_instance.execute("SELECT * FROM game AS g INNER JOIN option_on AS oo ON g.game_id = oo.game_id INNER JOIN bet AS b ON oo.bet_id = b.bet_id WHERE b.playable_until > %s ORDER BY g.game_id", (current_date,))
             games = connection_instance.fetchall()
             # Returning the data in a json format with column names as keys
@@ -45,7 +45,7 @@ class Game(Resource):
 
         else:
         # Get the game
-            connection_instance.execute("SELECT * FROM game AS g INNER JOIN option_on AS oo ON g.game_id = oo.game_id INNER JOIN bet AS b ON oo.bet_id = b.bet_id WHERE b.playable_until > %s AND g.game_id = %s ORDER BY g.game_id", (current_date,game_id.__str__()))
+            connection_instance.execute("SELECT * FROM game AS g INNER JOIN option_on AS oo ON g.game_id = oo.game_id INNER JOIN bet AS b ON oo.bet_id = b.bet_id WHERE b.playable_until > %s AND g.game_id = %s", (current_date,game_id.__str__()))
             game = connection_instance.fetchone()
             if game is None:
                 abort(404, message="Game {} doesn't exist".format(game_id))

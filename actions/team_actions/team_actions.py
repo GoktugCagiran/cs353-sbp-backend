@@ -114,8 +114,8 @@ class Team(Resource):
         cursor = connection_instance.execute("SELECT * FROM team WHERE team_id = %s", (team_id.__str__(),))
         team = connection_instance.fetchone()
         
-        # Getting the team value
-        team_value = int(team[2])
+        # Getting the team value of team networth column
+        team_value = team[1]
 
         cursor = connection_instance.execute("UPDATE league SET total_worth = total_worth + %s WHERE league_id = %s", (team_value.__str__(), args['league_id']))
         # Returning the data
