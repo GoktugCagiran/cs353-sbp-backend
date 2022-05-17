@@ -3,16 +3,18 @@ from flask_restful import reqparse, abort, Api, Resource
 import psycopg2
 import sys
 
+from requests import post
+
 connection_instance = 0
 
 
 def connect():
 	#Define our connection string
-	conn_string = "host='localhost' port=5432 dbname='cs353DB' user='gcagiran'"
+    conn_string = "host='localhost', port=5432, database='testdb3', user='postgres', password='admin'"
 
-	conn = psycopg2.connect(conn_string)
-	conn.autocommit = True
-	return conn.cursor()
+    conn = psycopg2.connect(host="localhost", port=5432, database="testdb3", user="postgres", password="admin")
+    conn.autocommit = True
+    return conn.cursor()
 
 # Connect to the database
 if connection_instance == 0:

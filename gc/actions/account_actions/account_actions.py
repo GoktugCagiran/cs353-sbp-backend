@@ -17,8 +17,8 @@ def defaultconverter(o):
 
 def connect():
     #Define our connection string
-    conn_string = "host='localhost' port=5432 dbname='cs353DB' user='gcagiran'"
-    conn = psycopg2.connect(conn_string)
+    conn_string = "host='localhost', port=5432, database='testdb3', user='postgres', password='admin'"
+    conn = psycopg2.connect(host="localhost", port=5432, database="testdb3", user="postgres", password="admin")
     conn.autocommit = True
     tmp = conn.cursor()
     return tmp
