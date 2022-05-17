@@ -9,7 +9,7 @@ def get_auth_token(user_id: int):
     auth_token_found = False
     token_valid = False
     auth_token = None
-    conn = psycopg2.connect(host="localhost", port=5432, database="cs353DB", user="gcagiran")
+    conn = psycopg2.connect(host="localhost", port=5432, database="testdb3", user="postgres", password="admin")
     cursor = conn.cursor()
     cursor.execute(f'SELECT auth_token, valid_until FROM user_auth_tokens WHERE user_id={user_id}')
     row = cursor.fetchone()
@@ -33,7 +33,7 @@ def get_auth_token(user_id: int):
 
 def save_new_token(user_id: int):
     print('Saving New Token userId: ', user_id)
-    conn = psycopg2.connect(host="localhost", port=5432, database="cs353DB", user="gcagiran")
+    conn = psycopg2.connect(host="localhost", port=5432, database="testdb3", user="postgres", password="admin")
     cursor = conn.cursor()
     cursor.execute(f'SELECT * FROM user_auth_tokens WHERE user_id=\'{user_id}\'')
     row_count = cursor.rowcount
@@ -64,7 +64,7 @@ def revoke_token(user_id: int):
     token_revoked = False
     conn = None
     try:
-        conn = psycopg2.connect(host="localhost", port=5432, database="cs353DB", user="gcagiran")
+        conn = psycopg2.connect(host="localhost", port=5432, database="testdb3", user="postgres", password="admin")
         cursor = conn.cursor()
         cursor.execute(f'DELETE FROM user_auth_tokens WHERE user_id=\'{user_id}\'')
         conn.commit()
@@ -81,7 +81,7 @@ def check_if_token_valid(auth_token: str):
     conn = None
     token_valid = False
     try:
-        conn = psycopg2.connect(host="localhost", port=5432, database="cs353DB", user="gcagiran")
+        conn = psycopg2.connect(host="localhost", port=5432, database="testdb3", user="postgres", password="admin")
         cursor = conn.cursor()
         cursor.execute(f'SELECT valid_until FROM user_auth_tokens WHERE auth_token=\'{auth_token}\';')
         row = cursor.fetchone()

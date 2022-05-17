@@ -9,7 +9,7 @@ class Reward(Resource):
         reward_id = request.args.get("rewardId")
 
         conn = psycopg2.connect(
-            host="localhost", port=5432, database="cs353DB", user="gcagiran")
+            host="localhost", port=5432, database="testdb3", user="postgres", password="admin")
 
         cursor = conn.cursor()
 
@@ -37,7 +37,7 @@ class Reward(Resource):
         post_body = request.json
 
         conn = psycopg2.connect(
-            host="localhost", port=5432, database="cs353DB", user="gcagiran")
+            host="localhost", port=5432, database="testdb3", user="postgres", password="admin")
 
         cursor = conn.cursor()
 

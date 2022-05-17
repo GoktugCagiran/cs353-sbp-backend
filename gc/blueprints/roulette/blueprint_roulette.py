@@ -37,7 +37,7 @@ class PlayRoulette(Resource):
 
         reduce_user_balance(user_id, bet_amount)
         conn = psycopg2.connect(
-            host="localhost", port=5432, database="cs353DB", user="gcagiran")
+            host="localhost", port=5432, database="testdb3", user="postgres", password="admin")
         cursor = conn.cursor()
         cursor.execute(
             f'SELECT reward_id, title, description, value FROM reward WHERE is_available=true;')

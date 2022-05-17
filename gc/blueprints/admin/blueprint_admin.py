@@ -16,7 +16,7 @@ class DeactivateUser(Resource):
 
         user_id = request_body["userId"]
         conn = psycopg2.connect(
-            host="localhost", port=5432, database="cs353DB", user="gcagiran")
+            host="localhost", port=5432, database="testdb3", user="postgres", password="admin")
         cursor = conn.cursor()
 
         cursor.execute(f'UPDATE generic_user SET user_active=FALSE WHERE user_id=\'{user_id}\';')
@@ -34,7 +34,7 @@ class ActivateUser(Resource):
 
         user_id = request_body["userId"]
         conn = psycopg2.connect(
-            host="localhost", port=5432, database="cs353DB", user="gcagiran")
+            host="localhost", port=5432, database="testdb3", user="postgres", password="admin")
         cursor = conn.cursor()
 
         cursor.execute(f'UPDATE generic_user SET user_active=TRUE WHERE user_id=\'{user_id}\';')

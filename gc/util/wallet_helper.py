@@ -4,7 +4,7 @@ from datetime import datetime as dt, timedelta
 import pytz
 
 def check_user_balance(user_id: int, required_amount: float):
-    conn = psycopg2.connect(host="localhost", port=5432, database="cs353DB", user="gcagiran")
+    conn = psycopg2.connect(host="localhost", port=5432, database="testdb3", user="postgres", password="admin")
     cursor = conn.cursor()
 
     cursor.execute(f'SELECT balance FROM customer WHERE user_id=\'{user_id}\';')
@@ -17,7 +17,7 @@ def check_user_balance(user_id: int, required_amount: float):
 
 
 def add_to_user_balance(user_id: int, add_amount: float):
-    conn = psycopg2.connect(host="localhost", port=5432, database="cs353DB", user="gcagiran")
+    conn = psycopg2.connect(host="localhost", port=5432, database="testdb3", user="postgres", password="admin")
     cursor = conn.cursor()
 
     cursor.execute(f'SELECT balance FROM customer WHERE user_id=\'{user_id}\';')
@@ -34,7 +34,7 @@ def add_to_user_balance(user_id: int, add_amount: float):
 
 
 def reduce_user_balance(user_id: int, reduce_amount: float):
-    conn = psycopg2.connect(host="localhost", port=5432, database="cs353DB", user="gcagiran")
+    conn = psycopg2.connect(host="localhost", port=5432, database="testdb3", user="postgres", password="admin")
     cursor = conn.cursor()
 
     cursor.execute(f'SELECT balance FROM customer WHERE user_id=\'{user_id}\';')

@@ -9,7 +9,7 @@ class Sharable(Resource):
         sharable_id = request.args.get("sharableId")
 
         conn = psycopg2.connect(
-            host="localhost", port=5432, database="cs353DB", user="gcagiran")
+            host="localhost", port=5432, database="testdb3", user="postgres", password="admin")
         sharable_cursor = conn.cursor()
 
         # Get Sharable Info
@@ -127,7 +127,7 @@ class Sharable(Resource):
 
         sharable_id = uuid.uuid4()
         conn = psycopg2.connect(
-            host="localhost", port=5432, database="cs353DB", user="gcagiran")
+            host="localhost", port=5432, database="testdb3", user="postgres", password="admin")
         cursor = conn.cursor()
 
         cursor.execute(f'INSERT INTO sharable (sharable_id, shared_timestamp, sharable_type, num_of_likes, num_of_comments, description) VALUES (\'{sharable_id}\', current_timestamp, \'{sharable_type}\', 0, 0, \'{sharable_desc}\');')

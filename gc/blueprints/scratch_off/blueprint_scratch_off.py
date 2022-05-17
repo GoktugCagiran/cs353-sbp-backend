@@ -21,7 +21,7 @@ class GetUserScratchOffs(Resource):
         if not auth_token_valid:
             return {"error": "Auth Token Invalid"}, 400
         conn = psycopg2.connect(
-            host="localhost", port=5432, database="cs353DB", user="gcagiran")
+            host="localhost", port=5432, database="testdb3", user="postgres", password="admin")
         cursor = conn.cursor()
 
         cursor.execute(
@@ -41,7 +41,7 @@ class GetScratchOff(Resource):
     def get(self):
         scratch_off_id = request.args.get("scratchOffId", type=str)
         conn = psycopg2.connect(
-            host="localhost", port=5432, database="cs353DB", user="gcagiran")
+            host="localhost", port=5432, database="testdb3", user="postgres", password="admin")
         cursor = conn.cursor()
 
         cursor.execute(f'SELECT scratch_off_id, boxes, won_amount, is_won, played_timestamp FROM scratch_off NATURAL JOIN scratched_by WHERE scratch_off_id=\'{scratch_off_id}\';')
@@ -72,7 +72,7 @@ class NewScratchOff(Resource):
         scratch_off_id = uuid.uuid4()
 
         conn = psycopg2.connect(
-            host="localhost", port=5432, database="cs353DB", user="gcagiran")
+            host="localhost", port=5432, database="testdb3", user="postgres", password="admin")
         cursor = conn.cursor()
         cursor.execute(
             f'SELECT reward_id, title, description, value FROM reward WHERE is_available=true;')
